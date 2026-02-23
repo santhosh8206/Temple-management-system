@@ -7,15 +7,30 @@ import KovilExpenses from './pages/KovilExpenses';
 import TempleRecords from './pages/TempleRecords';
 import KovilDonations from './pages/KovilDonations';
 import {
-  Typography,
-  Button,
-  Box,
-  AppBar,
-  Toolbar,
   ThemeProvider,
   createTheme,
   CssBaseline,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Box,
+  Typography,
+  AppBar,
+  Toolbar,
+  Paper,
 } from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  AccountBalance as TempleIcon,
+  Assessment as AuditIcon,
+  AddCircle as ExpenseIcon,
+  People as UsersIcon,
+  Menu as MenuIcon
+} from '@mui/icons-material';
 
 const theme = createTheme({
   palette: {
@@ -103,47 +118,129 @@ const theme = createTheme({
   }
 });
 
-function Navigation() {
+const DRAWER_WIDTH = 280;
+
+function Sidebar() {
   const location = useLocation();
   
+  const menuItems = [
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+    { text: 'Temple Records', icon: <TempleIcon />, path: '/temple-records' },
+    { text: 'Audit Log', icon: <AuditIcon />, path: '/audit' },
+    { text: 'Add Expense', icon: <ExpenseIcon />, path: '/add-expense' },
+    { text: 'Users List', icon: <UsersIcon />, path: '/users' },
+  ];
+
   return (
-    <AppBar position="static" sx={{ mb: 4 }} elevation={0}>
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-          Temple Management System
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: DRAWER_WIDTH,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: DRAWER_WIDTH,
+          boxSizing: 'border-box',
+          bgcolor: 'primary.dark',
+          color: 'white',
+          borderRight: 'none',
+        },
+      }}
+    >
+      <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <TempleIcon sx={{ fontSize: 32, color: 'secondary.main' }} />
+        <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: 0.5 }}>
+          KMS Admin
         </Typography>
-        <Button 
-          color="inherit" 
-          component={Link} 
-          to="/" 
-          sx={{ mr: 2, fontWeight: location.pathname === '/' ? 'bold' : 'normal', borderBottom: location.pathname === '/' ? '2px solid white' : 'none' }}
+      </Box>
+      
+      <Divider sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 2 }} />
+      
+      <List sx={{ px: 2 }}>
+        {menuItems.map((item) => {
+          const isActive = item.path === '/' 
+            ? location.pathname === '/' 
+            : location.pathname.startsWith(item.path);
+            
+          return (
+            <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
+              <ListItemButton
+                component={Link}
+                to={item.path}
+                sx={{
+                  borderRadius: 2,
+                  transition: 'all 0.2s',
+                  bgcolor: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateX(4px)',
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ color: isActive ? 'secondary.main' : 'rgba(255,255,255,0.7)', minWidth: 40 }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text} 
+                  primaryTypographyProps={{ 
+                    fontWeight: isActive ? 700 : 500,
+                    fontSize: '0.95rem'
+                  }} 
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
+      
+      <Box sx={{ mt: 'auto', p: 3 }}>
+        <Paper 
+          sx={{ 
+            p: 2, 
+            bgcolor: 'rgba(255,255,255,0.05)', 
+            color: 'white', 
+            borderRadius: 3,
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}
         >
-          Dashboard
-        </Button>
-        <Button 
-          color="inherit" 
-          component={Link} 
-          to="/temple-records"
-          sx={{ mr: 2, fontWeight: location.pathname.startsWith('/temple-records') ? 'bold' : 'normal', borderBottom: location.pathname.startsWith('/temple-records') ? '2px solid white' : 'none' }}
-        >
-          Temple Records
-        </Button>
-        <Button 
-          color="inherit" 
-          component={Link} 
-          to="/audit"
-          sx={{ mr: 2, fontWeight: location.pathname === '/audit' ? 'bold' : 'normal', borderBottom: location.pathname === '/audit' ? '2px solid white' : 'none' }}
-        >
-          Audit Log
-        </Button>
-        <Button 
-          color="inherit" 
-          component={Link} 
-          to="/add-expense"
-          sx={{ mr: 2, fontWeight: location.pathname === '/add-expense' ? 'bold' : 'normal', borderBottom: location.pathname === '/add-expense' ? '2px solid white' : 'none' }}
-        >
-          Add Expense
-        </Button>
+          <Typography variant="caption" sx={{ opacity: 0.7, display: 'block', mb: 1 }}>
+            Connected to 
+          </Typography>
+          <Typography variant="body2" fontWeight="bold">
+            Temple Backend v1.0
+          </Typography>
+        </Paper>
+      </Box>
+    </Drawer>
+  );
+}
+
+function TopHeader() {
+  const location = useLocation();
+  const getTitle = () => {
+    if (location.pathname === '/') return 'Dashboard';
+    if (location.pathname.startsWith('/temple-records')) return 'Temple Records';
+    if (location.pathname === '/audit') return 'Financial Audit Log';
+    if (location.pathname === '/add-expense') return 'Record New Expense';
+    if (location.pathname === '/users') return 'Users Management';
+    return 'Temple Management';
+  };
+
+  return (
+    <AppBar 
+      position="sticky" 
+      elevation={0} 
+      sx={{ 
+        bgcolor: 'background.default', 
+        color: 'text.primary',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        mb: 4
+      }}
+    >
+      <Toolbar>
+        <Typography variant="h5" fontWeight="bold">
+          {getTitle()}
+        </Typography>
       </Toolbar>
     </AppBar>
   );
@@ -154,18 +251,23 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'background.default' }}>
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<AddUser />} />
-            <Route path="/users" element={<UsersList />} />
-            <Route path="/temple-records" element={<TempleRecords />} />
-            <Route path="/temple-records/:kovilId" element={<TempleRecords />} />
-            <Route path="/donations/:kovilId" element={<KovilDonations />} />
-            <Route path="/audit" element={<AuditLog />} />
-            <Route path="/add-expense" element={<ExpenseCalculator />} />
-            <Route path="/expenses/:kovilId" element={<KovilExpenses />} />
-          </Routes>
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+          <Sidebar />
+          <Box component="main" sx={{ flexGrow: 1, p: 0 }}>
+            <TopHeader />
+            <Box sx={{ px: 4, pb: 4 }}>
+              <Routes>
+                <Route path="/" element={<AddUser />} />
+                <Route path="/users" element={<UsersList />} />
+                <Route path="/temple-records" element={<TempleRecords />} />
+                <Route path="/temple-records/:kovilId" element={<TempleRecords />} />
+                <Route path="/donations/:kovilId" element={<KovilDonations />} />
+                <Route path="/audit" element={<AuditLog />} />
+                <Route path="/add-expense" element={<ExpenseCalculator />} />
+                <Route path="/expenses/:kovilId" element={<KovilExpenses />} />
+              </Routes>
+            </Box>
+          </Box>
         </Box>
       </Router>
     </ThemeProvider>
